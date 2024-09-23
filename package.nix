@@ -3,44 +3,18 @@
   stdenvNoCC,
   fetchurl,
   autoPatchelfHook,
-  makeWrapper,
   wrapGAppsHook,
   fd,
-  patchelfUnstable,
   # deps
   alsa-lib,
-  atk,
-  cairo,
-  cups,
-  dbus,
+  dbus-glib,
   ffmpeg,
-  fontconfig,
-  freetype,
-  gdk-pixbuf,
-  glib,
   gtk3,
-  libevent,
-  libffi,
   libglvnd,
-  libjpeg,
-  libnotify,
-  libpng,
-  libstartup_notification,
   libva,
-  libvpx,
-  libwebp,
-  libxkbcommon,
-  libxml2,
-  mesa,
-  pango,
   pciutils,
-  pulseaudio,
   pipewire,
-  stdenv,
-  udev,
-  xcb-util-cursor,
   xorg,
-  zlib,
   # package-related
   sourceInfo,
 }:
@@ -53,70 +27,15 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   nativeBuildInputs = [
     fd
     autoPatchelfHook
-    makeWrapper
     wrapGAppsHook
-    patchelfUnstable
   ];
 
   buildInputs = [
+    gtk3
     alsa-lib
+    dbus-glib
+    xorg.libXtst
   ];
-
-  # Used by autoPatchelfHook
-  runtimeDependencies = lib.concatLists [
-    [
-      atk
-      cairo
-      cups
-      dbus
-      ffmpeg
-      fontconfig
-      freetype
-      gdk-pixbuf
-      glib
-      gtk3
-      libevent
-      libffi
-      libglvnd
-      libjpeg
-      libnotify
-      libpng
-      libstartup_notification
-      libva.out
-      libvpx
-      libwebp
-      libxkbcommon
-      libxml2
-      mesa
-      pango
-      pciutils
-      pulseaudio
-      pipewire
-      stdenv.cc.cc
-      udev
-      xcb-util-cursor
-      zlib
-    ]
-    (with xorg; [
-      libxcb
-      libX11
-      libXcursor
-      libXrandr
-      libXi
-      libXext
-      libXcomposite
-      libXdamage
-      libXfixes
-      libXScrnSaver
-    ])
-  ];
-
-  appendRunpaths = [
-    "${pipewire}/lib"
-  ];
-
-  # Firefox uses "relrhack" to manually process relocations from a fixed offset
-  patchelfFlags = ["--no-clobber-old-sections"];
 
   installPhase = ''
     runHook preInstall
@@ -143,10 +62,18 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  postFixup = ''
-    # For some reason autoPatchelfHook can't take care of all the deps
-    wrapProgram $out/bin/zen \
-      --set LD_LIBRARY_PATH "${lib.makeLibraryPath finalAttrs.runtimeDependencies}"
+  preFixup = ''
+    gappsWrapperArgs+=(
+      --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath [
+      pciutils
+      pipewire
+      libva
+      libglvnd
+      ffmpeg
+    ]}"
+    )
+    gappsWrapperArgs+=(--set MOZ_LEGACY_PROFILES 1)
+    wrapGApp $out/bin/zen
   '';
 
   meta = {
