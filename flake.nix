@@ -10,18 +10,8 @@
     nixpkgs,
   }: let
     system = "x86_64-linux";
-    version = "1.0.1-a.3";
 
-    downloadUrl = {
-      "specific" = {
-        url = "https://github.com/zen-browser/desktop/releases/download/${version}/zen.linux-specific.tar.bz2";
-        sha256 = "sha256-tdXdS73iMwG0NWseDGxmqj+iuZ2YkpZvsQPNgKmvDdc=";
-      };
-      "generic" = {
-        url = "https://github.com/zen-browser/desktop/releases/download/${version}/zen.linux-generic.tar.bz2";
-        sha256 = "";
-      };
-    };
+    info = builtins.fromJSON (builtins.readFile ./info.json);
 
     pkgs = nixpkgs.legacyPackages.${system};
 
@@ -30,13 +20,13 @@
     packages."${system}" = {
       generic = mkZen {
         variant = "generic";
-        src = downloadUrl.generic;
-        inherit version;
+        src = info.generic;
+        inherit (info) version;
       };
       specific = mkZen {
         variant = "specific";
-        src = downloadUrl.specific;
-        inherit version;
+        src = info.specific;
+        inherit (info) version;
       };
       default = self.packages.${system}.specific;
     };
