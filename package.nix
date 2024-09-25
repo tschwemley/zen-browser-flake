@@ -12,6 +12,7 @@
   gtk3,
   libglvnd,
   libva,
+  mesa,
   pciutils,
   pipewire,
   xorg,
@@ -69,6 +70,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       pipewire
       libva
       libglvnd
+      mesa
       ffmpeg
     ]}"
     )
