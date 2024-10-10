@@ -2,13 +2,15 @@
 
 set -euo pipefail
 
+regex="^[0-9]\.[0-9]\.[0-9].*$"
+
 info="info.json"
 oldversion=$(jq -rc '.version' "$info")
 
 url="https://api.github.com/repos/zen-browser/desktop/releases?per_page=1"
 version="$(curl -s "$url" | jq -rc '.[0].tag_name')"
 
-if [ "$oldversion" != "$version" ]; then
+if [ "$oldversion" != "$version" ] && [[ "$version" =~ $regex ]]; then
   echo "Found new version $version"
   sharedUrl="https://github.com/zen-browser/desktop/releases/download"
 
