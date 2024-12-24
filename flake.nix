@@ -17,18 +17,8 @@
 
     mkZen = sourceInfo: pkgs.callPackage ./package.nix {inherit sourceInfo;};
   in {
-    packages."${system}" = {
-      generic = mkZen {
-        variant = "generic";
-        src = info.generic;
-        inherit (info) version;
-      };
-      specific = mkZen {
-        variant = "specific";
-        src = info.specific;
-        inherit (info) version;
-      };
-      default = self.packages.${system}.specific;
+    packages."${system}".default = mkZen {
+      inherit (info) hash url version;
     };
   };
 }

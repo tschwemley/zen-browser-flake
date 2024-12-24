@@ -20,11 +20,11 @@
   # package-related
   sourceInfo,
 }:
-stdenvNoCC.mkDerivation (finalAttrs: {
-  pname = "zen-browser-${sourceInfo.variant}";
+stdenvNoCC.mkDerivation {
+  pname = "zen-browser";
   inherit (sourceInfo) version;
 
-  src = fetchurl sourceInfo.src;
+  src = fetchurl {inherit (sourceInfo) hash url;};
 
   nativeBuildInputs = [
     fd
@@ -87,4 +87,4 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     mainProgram = "zen";
     platforms = ["x86_64-linux"];
   };
-})
+}

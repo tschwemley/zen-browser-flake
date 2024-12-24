@@ -12,20 +12,13 @@ version="$(curl -s "$url" | jq -rc '.[0].tag_name')"
 
 if [ "$oldversion" != "$version" ] && [[ "$version" =~ $regex ]]; then
   echo "Found new version $version"
-  sharedUrl="https://github.com/zen-browser/desktop/releases/download"
-
-  genericUrl="${sharedUrl}/${version}/zen.linux-generic.tar.bz2"
-  specificUrl="${sharedUrl}/${version}/zen.linux-specific.tar.bz2"
+  url="https://github.com/zen-browser/desktop/releases/download/${version}/zen.linux-x86_64.tar.bz2"
 
   # perform downloads in parallel
   echo "Prefetching files..."
-  nix store prefetch-file "$genericUrl" --log-format raw --json | jq -rc '.hash' >/tmp/genericHash &
-  nix store prefetch-file "$specificUrl" --log-format raw --json | jq -rc '.hash' >/tmp/specificHash &
-  wait
-  genericHash=$(</tmp/genericHash)
-  specificHash=$(</tmp/specificHash)
+  hash=$(nix store prefetch-file "$url" --log-format raw --json | jq -rc .hash)
 
-  echo '{"version":"'"$version"'","generic":{"hash":"'"$genericHash"'","url":"'"$genericUrl"'"},"specific":{"hash":"'"$specificHash"'","url":"'"$specificUrl"'"}}' >"$info"
+  echo '{"version":"'"$version"'","hash":"'"$hash"'","url":"'"$url"'"}' > "$info"
 else
   echo "zen is up to date"
 fi
